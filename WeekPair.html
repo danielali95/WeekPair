@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeekPair</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            height: 100%;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            color: #333;
+        }
+        #root {
+            height: 100%;
+        }
+        .app-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            position: relative;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 450px;
+            text-align: center;
+            z-index: 1;
+        }
+        h1 {
+            color: #4a4a4a;
+            margin-bottom: 0.5rem;
+        }
+        .tagline {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            border: 2px solid #a777e3;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
+        select:focus {
+            outline: none;
+            border-color: #6e8efb;
+        }
+        .combinations {
+            margin-top: 1rem;
+        }
+        .combination {
+            background-color: #f0f0f0;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease-out;
+        }
+        .combination:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeOut 1s ease-out 3s forwards;
+        }
+        .welcome-animation {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 1rem;
+            animation: welcomeAnim 2s ease-out;
+        }
+        .tagline-animation {
+            font-size: 1.5rem;
+            color: #f0f0f0;
+            animation: welcomeAnim 2s ease-out 0.5s;
+        }
+        @keyframes welcomeAnim {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        const combinations = {
+            Monday: [
+                { day1: 'Friday', day2: 'Wednesday' },
+                { day1: 'Saturday', day2: 'Tuesday' }
+            ],
+            Tuesday: [
+                { day1: 'Thursday', day2: 'Sunday' },
+                { day1: 'Wednesday', day2: 'Saturday' }
+            ],
+            Wednesday: [
+                { day1: 'Friday', day2: 'Saturday' },
+                { day1: 'Sunday', day2: 'Thursday' }
+            ],
+            Thursday: [
+                { day1: 'Tuesday', day2: 'Saturday' },
+                { day1: 'Monday', day2: 'Wednesday' }
+            ],
+            Friday: [
+                { day1: 'Thursday', day2: 'Monday' },
+                { day1: 'Wednesday', day2: 'Tuesday' }
+            ],
+            Saturday: [
+                { day1: 'Thursday', day2: 'Tuesday' },
+                { day1: 'Friday', day2: 'Monday' }
+            ],
+            Sunday: [
+                { day1: 'Saturday', day2: 'Monday' },
+                { day1: 'Wednesday', day2: 'Thursday' }
+            ]
+        };
+
+        function IntroOverlay() {
+            return (
+                <div className="intro-overlay">
+                    <div className="welcome-animation">Welcome to WeekPair</div>
+                    <div className="tagline-animation">Odd Socks, Perfect Matches!</div>
+                </div>
+            );
+        }
+
+        function WeekPair() {
+            const [selectedDay, setSelectedDay] = React.useState('');
+
+            React.useEffect(() => {
+                const today = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', weekday: 'long' });
+                setSelectedDay(today);
+            }, []);
+
+            const handleDayChange = (event) => {
+                setSelectedDay(event.target.value);
+            };
+
+            const renderCombinations = () => {
+                if (combinations[selectedDay]) {
+                    return combinations[selectedDay].map((combo, index) => (
+                        <div key={index} className="combination">
+                            {combo.day1} + {combo.day2}
+                        </div>
+                    ));
+                }
+                return null;
+            };
+
+            return (
+                <div className="app-container">
+                    <IntroOverlay />
+                    <div className="container">
+                        <h1>WeekPair</h1>
+                        <div className="tagline">Odd Socks, Perfect Matches!</div>
+                        <select value={selectedDay} onChange={handleDayChange}>
+                            {daysOfWeek.map(day => (
+                                <option key={day} value={day}>{day}</option>
+                            ))}
+                        </select>
+                        <div className="combinations">
+                            <h2>Valid Combinations for {selectedDay}:</h2>
+                            {renderCombinations()}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<WeekPair />, document.getElementById('root'));
+    </script>
+</body>
+</html>
